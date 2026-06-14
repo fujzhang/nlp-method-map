@@ -1,0 +1,492 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-sans)}
+.root{padding:1rem 0 2rem}
+.stage-hdr{display:flex;align-items:center;gap:10px;padding:10px 0 6px;cursor:pointer;user-select:none}
+.stage-num{font-size:11px;font-weight:500;padding:2px 9px;border-radius:20px;flex-shrink:0;color:#fff}
+.stage-title{font-size:15px;font-weight:500;color:var(--color-text-primary)}
+.stage-sub{font-size:12px;color:var(--color-text-secondary);margin-left:auto;padding-right:4px}
+.chev{font-size:11px;color:var(--color-text-tertiary);transition:transform .2s;flex-shrink:0}
+.chev.open{transform:rotate(90deg)}
+.method-row{display:flex;flex-wrap:wrap;gap:8px;padding:4px 0 0}
+.mcard{flex:1;min-width:140px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:9px 12px;cursor:pointer;transition:border-color .15s,background .15s;position:relative}
+.mcard:hover{border-color:var(--color-border-secondary);background:var(--color-background-secondary)}
+.mcard.active{border-color:var(--color-border-primary);background:var(--color-background-secondary)}
+.mcard.active .adot{display:block}
+.adot{display:none;position:absolute;top:8px;right:8px;width:6px;height:6px;border-radius:50%;background:#534AB7}
+.mn{font-size:13px;font-weight:500;color:var(--color-text-primary)}
+.mt{font-size:11px;color:var(--color-text-secondary);margin-top:2px}
+.detail{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);margin:10px 0 0;display:none;overflow:hidden}
+.detail.open{display:block}
+.tabs{display:flex;border-bottom:0.5px solid var(--color-border-tertiary);background:var(--color-background-secondary)}
+.tab{padding:8px 14px;font-size:12px;cursor:pointer;color:var(--color-text-secondary);border-bottom:2px solid transparent;margin-bottom:-0.5px;white-space:nowrap}
+.tab.on{color:var(--color-text-primary);font-weight:500;border-bottom-color:#534AB7}
+.tab-body{padding:14px 16px;display:none}
+.tab-body.on{display:block}
+.what-txt{font-size:13px;color:var(--color-text-secondary);line-height:1.7}
+.step-list{list-style:none;margin-top:8px}
+.step-li{display:flex;gap:10px;margin-bottom:12px;align-items:flex-start}
+.step-n{width:22px;height:22px;border-radius:50%;background:#534AB7;color:#fff;font-size:11px;font-weight:500;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.step-txt{font-size:13px;color:var(--color-text-secondary);line-height:1.6}
+.formula{background:var(--color-background-secondary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:8px 12px;font-family:var(--font-mono);font-size:12px;color:var(--color-text-primary);margin:8px 0;line-height:1.8}
+.formula-lbl{font-size:11px;color:var(--color-text-tertiary);margin-bottom:3px;font-family:var(--font-sans)}
+.flow{display:flex;align-items:center;flex-wrap:wrap;gap:0;margin:10px 0}
+.fbox{background:var(--color-background-secondary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:6px 10px;font-size:12px;color:var(--color-text-primary);text-align:center}
+.farr{font-size:14px;color:var(--color-text-tertiary);padding:0 4px;flex-shrink:0}
+.pro-con{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:2px}
+.pc{border-radius:var(--border-radius-md);padding:10px 12px}
+.pc.pro{background:#E1F5EE;border:0.5px solid #5DCAA5}
+.pc.con{background:#FAECE7;border:0.5px solid #F0997B}
+.pclbl{font-size:11px;font-weight:500;margin-bottom:6px}
+.pc.pro .pclbl{color:#085041}.pc.con .pclbl{color:#712B13}
+.pci{font-size:12px;color:var(--color-text-secondary);line-height:1.5;margin-bottom:3px;padding-left:10px;position:relative}
+.pci::before{content:'·';position:absolute;left:2px}
+.why{padding:12px 14px;background:#EEEDFE;border:0.5px solid #AFA9EC;border-radius:var(--border-radius-md);margin-top:2px}
+.why-lbl{font-size:11px;font-weight:500;color:#3C3489;margin-bottom:4px}
+.why-txt{font-size:12px;color:#534AB7;line-height:1.6}
+.conn{display:flex;flex-direction:column;align-items:center;padding:6px 0;gap:2px}
+.cline{width:1.5px;height:18px;background:var(--color-border-secondary)}
+.carr{font-size:14px;color:var(--color-text-tertiary)}
+@media(prefers-color-scheme:dark){
+.pc.pro{background:#04342C;border-color:#0F6E56}.pc.con{background:#4A1B0C;border-color:#993C1D}
+.pc.pro .pclbl{color:#9FE1CB}.pc.con .pclbl{color:#F5C4B3}
+.why{background:#26215C;border-color:#534AB7}.why-lbl{color:#CECBF6}.why-txt{color:#AFA9EC}
+.adot{background:#AFA9EC}
+}
+</style>
+
+<h2 class="sr-only">Complete NLP method map with explanations, steps, formulas, pros/cons, and evolution path</h2>
+<div class="root">
+<p style="font-size:12px;color:var(--color-text-secondary);margin-bottom:14px;">点击方法卡片 → 4个标签页：简介 / 操作步骤与公式 / 优缺点 / 引出路径</p>
+<div id="root"></div>
+</div>
+
+<script>
+const D=[
+{num:"L2",color:"#534AB7",title:"① 预处理 Preprocessing",sub:"原始文本 → token 序列",methods:[
+{name:"Rule-based 规则法",tag:"正则 / 词典",
+what:"用人写好的规则处理文本——比如遇到句号就切句，遇到空格就切词。就像给机器一本使用说明书。",
+steps:[
+{t:"去除格式噪声",d:"删掉 HTML 标签、特殊编码，只保留纯文字"},
+{t:"句子切分",d:"用句号/问号等切句，但要避免误判缩写（U.S.A.）"},
+{t:"分词 Tokenization",d:"按空格/标点切词，中文用最大匹配法"},
+{t:"词形规范化",d:"大写→小写，展开缩写（I'm → I am）"},
+{t:"停用词删除（可选）",d:"删除 the/is/a 等信息量低的词"}
+],
+flows:[["原始文本","→","去噪","→","切句","→","切词","→","规范化","→","token序列"]],
+formulas:[],
+pros:["极快，零训练成本","完全可解释"],
+cons:["边缘情况写不完","跨语言需重写"],
+why:"规则写不完——'Mr. Brown'、'U.S.A.' 这类特例太多，ML 分类器可以从数据里自动学"},
+{name:"ML 分类器法",tag:"Logistic Regression / 决策树",
+what:"把每个关键决策（这个句号是不是句末？）当成一个分类问题，让模型从标注数据自动学习规律。",
+steps:[
+{t:"收集标注数据",d:"人工标注句末/非句末的例子"},
+{t:"设计特征",d:"前后词是什么、词的大小写格式、词性等"},
+{t:"训练分类器",d:"用逻辑回归或决策树学习特征权重"},
+{t:"推理",d:"对新文本的每个候选点做二分类预测"}
+],
+flows:[["标注数据","→","特征提取","→","训练分类器","→","预测切分点"]],
+formulas:[{lbl:"逻辑回归预测概率",f:"P(y=1|x) = σ(w·x + b) = 1 / (1 + e^{-w·x})"}],
+pros:["自动学习边缘情况","泛化好"],
+cons:["需标注数据","每个决策点独立，不建模序列"],
+why:"分类器独立处理每个点，看不到序列的全局结构，引出序列标注和语言建模"}
+]},
+{num:"L10",color:"#0F6E56",title:"② 词表示 Word Representation",sub:"token → 数字向量",methods:[
+{name:"One-hot 编码",tag:"稀疏高维向量",
+what:"词表里有 V 个词，每个词就是一个 V 维向量，自己对应的位置为 1，其余全是 0。",
+steps:[
+{t:"建词表",d:"统计所有不重复的词，分配唯一编号 0…V-1"},
+{t:"编码",d:"词 i → 第 i 位为 1、其余为 0 的向量"}
+],
+flows:[["词表(V个词)","→","词→编号","→","[0,0,1,0,…,0]"]],
+formulas:[{lbl:"词 i 的向量（V维）",f:"v_i = [0, 0, …, 1, …, 0]   (第i位=1)"}],
+pros:["零成本","唯一标识每个词"],
+cons:["维度=词表大小，极稀疏","词之间没有相似度（正交）"],
+why:"dog 和 cat 的向量距离 = dog 和宇宙飞船的距离，不合理。需要能捕捉语义相似度的密集向量"},
+{name:"TF-IDF",tag:"加权词频，文档级",
+what:"给每个词在文档里打一个'重要性分数'——在本文出现多（TF高）但在所有文档里少见（IDF高）的词得分高。",
+steps:[
+{t:"计算 TF",d:"TF(w,d) = 词w在文档d中出现次数 / 文档d总词数"},
+{t:"计算 IDF",d:"IDF(w) = log(文档总数 N / 含词w的文档数 df_w)"},
+{t:"相乘",d:"TF-IDF(w,d) = TF(w,d) × IDF(w)"},
+{t:"构建文档向量",d:"每个维度对应一个词的 TF-IDF 分数"}
+],
+flows:[["词在文档中的频率","×","词的稀有程度","→","重要性分数向量"]],
+formulas:[{lbl:"TF-IDF 公式",f:"TF-IDF(w,d) = TF(w,d) × log(N / df_w)"}],
+pros:["自动降权高频无聊词","不需要训练"],
+cons:["稀疏，文档级，无词序信息"],
+why:"TF-IDF 是整个文档的词袋，无法用于词级别任务，也没有语义相似性"},
+{name:"Count-based / LSA",tag:"共现矩阵 + SVD",
+what:"统计哪些词经常一起出现，构成大矩阵，再用 SVD 压缩成小向量。经常一起出现的词意思相近。",
+steps:[
+{t:"构建共现矩阵",d:"统计每对词在滑动窗口（如±2词）内共同出现的次数，得到 V×V 矩阵"},
+{t:"SVD 分解",d:"将矩阵分解为 U·Σ·Vᵀ，取前 k 列降维"},
+{t:"提取词向量",d:"矩阵 U 的每一行即为对应词的 k 维向量"}
+],
+flows:[["语料库","→","V×V 共现矩阵","→","SVD 降维","→","k维词向量"]],
+formulas:[{lbl:"SVD 分解",f:"M ≈ U_k · Σ_k · V_k^T    (保留前k个奇异值)"},{lbl:"词 i 的向量",f:"v_i = U_k[i,:]   (第i行，k维)"}],
+pros:["利用全局统计","降维后密集"],
+cons:["矩阵极大，SVD 计算代价高，无法快速更新"],
+why:"SVD 太贵，无法扩展到超大语料。神经网络用反向传播高效学习，还能同时优化任务目标"},
+{name:"Word2Vec (Skip-gram)",tag:"浅层神经网络，L10",
+what:"训练一个神经网络预测'给定中心词，周围词是什么'。训练完后，网络的权重矩阵就是词向量。副产品：king−man+woman≈queen。",
+steps:[
+{t:"滑动窗口采样",d:"对每个中心词，取±L范围内的词为正例；随机采样噪声词为负例（negative sampling）"},
+{t:"计算相似度",d:"用点积衡量中心词向量 w 和上下文词向量 c 的相似度"},
+{t:"训练目标",d:"正例对相似度最大化，负例对相似度最小化"},
+{t:"梯度更新",d:"反向传播更新 W（target embedding矩阵）和 C（context embedding矩阵）"}
+],
+flows:[["中心词w","→","W矩阵取向量","→","与上下文词c点积","→","sigmoid","→","最大化P(+|w,c)"]],
+formulas:[
+{lbl:"正例概率（sigmoid点积）",f:"P(+|w,c) = 1 / (1 + e^{-w·c})"},
+{lbl:"Skip-gram 损失",f:"L = Σ log P(+|w,c) + Σ log P(-|w,n_i)"}
+],
+pros:["密集低维，可做类比推理","训练高效"],
+cons:["每词一个固定向量，无法区分多义词"],
+why:"'bank'在银行/河岸语境向量相同，静态向量无法区分多义。需要随上下文动态生成的向量"}
+]},
+{num:"L3",color:"#854F0B",title:"③ 语言建模 Language Modeling",sub:"P(下一个词 | 已有词)",methods:[
+{name:"N-gram 模型",tag:"基于计数，L3",
+what:"用前 N-1 个词预测第 N 个词，概率由语料库中的计数估计。N=2叫 bigram，N=3叫 trigram。",
+steps:[
+{t:"统计计数",d:"遍历语料，统计所有 n-gram 出现的次数 C(w_{i-n+1}…w_i)"},
+{t:"MLE 估计概率",d:"P(w_i | context) = C(context, w_i) / C(context)"},
+{t:"平滑处理",d:"对未见过的 n-gram 加平滑（Laplace加1，或Kneser-Ney），避免概率为0"},
+{t:"预测/生成",d:"给定上下文，查表返回概率最高的下一个词"}
+],
+flows:[["语料库","→","统计计数","→","MLE概率","→","平滑","→","预测下一词"]],
+formulas:[
+{lbl:"MLE 估计（bigram）",f:"P(w_i | w_{i-1}) = C(w_{i-1}, w_i) / C(w_{i-1})"},
+{lbl:"Laplace 平滑",f:"P_smooth(w_i|context) = (C(context,w_i)+1) / (C(context)+V)"},
+{lbl:"句子概率（链式法则）",f:"P(w_1…w_m) = ∏ P(w_i | w_{i-n+1}…w_{i-1})"}
+],
+pros:["原理透明，无需GPU","小数据也能用"],
+cons:["稀疏问题严重","窗口固定，无法捕捉长距离依赖"],
+why:"n=2 上下文太短，n=5 又稀疏。神经网络用词向量可以泛化到从未见过的组合"},
+{name:"FFNN 语言模型",tag:"固定窗口+词嵌入，L7",
+what:"把前 N 个词的向量拼接起来，送入前馈神经网络，输出下一个词的概率分布。词向量让模型能泛化到未见组合。",
+steps:[
+{t:"词向量查找",d:"把前 N-1 个词各自映射到 d 维词向量"},
+{t:"拼接",d:"将 N-1 个向量拼成一个 (N-1)×d 维的大向量 x"},
+{t:"隐藏层",d:"h = tanh(W_h · x + b_h)"},
+{t:"输出层",d:"y = softmax(W_o · h)，得到词表上的概率分布"},
+{t:"训练",d:"最小化交叉熵损失 L = -log P(正确词)"}
+],
+flows:[["前N-1个词","→","词嵌入查表","→","拼接","→","tanh隐层","→","softmax","→","P(下一词)"]],
+formulas:[
+{lbl:"隐藏层激活",f:"h = tanh(W_h · [e_{w_{t-n+1}};…;e_{w_{t-1}}] + b_h)"},
+{lbl:"输出概率",f:"P(w_t | context) = softmax(W_o · h)[w_t]"}
+],
+pros:["词向量泛化，缓解稀疏","无需平滑"],
+cons:["窗口仍固定，不同位置参数不共享"],
+why:"固定窗口是根本瓶颈——句子长度不固定。RNN 用递归隐状态理论上处理任意长度"},
+{name:"RNN 语言模型",tag:"循环隐状态，L8",
+what:"用一个隐状态 h_t 在时间步之间传递'记忆'。每读一个词就更新隐状态。LSTM 和 GRU 是加了遗忘门的改进版。",
+steps:[
+{t:"初始化",d:"h_0 = 零向量"},
+{t:"逐词递推",d:"h_t = tanh(W_h·h_{t-1} + W_x·x_t + b)"},
+{t:"输出层",d:"y_t = softmax(W_o·h_t)，预测下一词"},
+{t:"BPTT 训练",d:"通过时间的反向传播（Backprop Through Time）更新所有参数"},
+{t:"（LSTM改进）",d:"加入遗忘门f、输入门i、输出门o，缓解梯度消失"}
+],
+flows:[["x_1","→","h_1","→","x_2","→","h_2","→","…","→","h_t","→","P(下一词)"]],
+formulas:[
+{lbl:"基础 RNN 更新",f:"h_t = tanh(W_h·h_{t-1} + W_x·x_t + b)"},
+{lbl:"LSTM 遗忘门",f:"f_t = σ(W_f·[h_{t-1},x_t] + b_f)"},
+{lbl:"输出概率",f:"P(w_{t+1}|w_1…w_t) = softmax(W_o·h_t)"}
+],
+pros:["处理任意长度序列","参数共享"],
+cons:["必须顺序计算，无法并行","长序列梯度消失"],
+why:"顺序计算无法并行，训练超大模型极慢。Transformer 全部并行，且任意位置直接连接"},
+{name:"Transformer",tag:"Self-attention，L9",
+what:"让序列里每个词直接'注意'所有其他词，注意力权重决定借多少信息。完全并行，捕捉全局依赖。",
+steps:[
+{t:"词嵌入+位置编码",d:"x_i = embedding(w_i) + positional_encoding(i)"},
+{t:"生成 Q、K、V",d:"Q=XW^Q，K=XW^K，V=XW^V（三个线性变换）"},
+{t:"计算注意力分数",d:"score = QK^T / √d_k，然后 softmax 归一化"},
+{t:"加权求和",d:"输出 = softmax(score) · V"},
+{t:"Multi-head",d:"并行做 h 个注意力头，拼接后再线性变换"},
+{t:"Add & Norm + FFN",d:"每层加残差连接和 LayerNorm，再接前馈子层"}
+],
+flows:[["输入嵌入+位置编码","→","Q/K/V 投影","→","Attention(Q,K,V)","→","Multi-head拼接","→","Add&Norm","→","FFN","→","输出"]],
+formulas:[
+{lbl:"Scaled Dot-Product Attention",f:"Attention(Q,K,V) = softmax(QK^T / √d_k) · V"},
+{lbl:"Multi-Head Attention",f:"MHA = Concat(head_1,…,head_h) · W^O"},
+{lbl:"每个 head",f:"head_i = Attention(QW_i^Q, KW_i^K, VW_i^V)"}
+],
+pros:["任意位置直接连接","完全并行训练快"],
+cons:["注意力是O(n²)，超长序列代价高","无内置位置感知"],
+why:"Transformer 能力强，但从头训练要海量数据。预训练一次在各任务微调，是更经济的范式"}
+]},
+{num:"L4",color:"#993C1D",title:"④ 文本分类 Text Classification",sub:"文档 → 类别标签",methods:[
+{name:"Naive Bayes",tag:"生成式，贝叶斯",
+what:"用贝叶斯定理：P(类别|文档) ∝ P(文档|类别)×P(类别)。'Naive'指假设词与词之间相互独立。",
+steps:[
+{t:"估计先验 P(c)",d:"P(c) = 类别c的文档数 / 总文档数"},
+{t:"估计似然 P(w|c)",d:"P(w|c) = 词w在类别c中出现次数+1 / 类别c总词数+V（Laplace平滑）"},
+{t:"预测",d:"对每个类别计算 log P(c) + Σ log P(w_i|c)，取最大值"},
+],
+flows:[["文档词列表","→","查P(w|c)表","→","Σ log概率","→","argmax取类别"]],
+formulas:[
+{lbl:"贝叶斯分类",f:"c* = argmax_c [ log P(c) + Σ_{w∈doc} log P(w|c) ]"},
+{lbl:"Laplace平滑似然",f:"P(w|c) = (C(w,c)+1) / (Σ_w C(w,c) + V)"}
+],
+pros:["极快，少数据鲁棒"],
+cons:["独立假设几乎不成立","精度低"],
+why:"'not good'中 not 和 good 被独立对待，结果错误。需要能建模特征关系的判别式模型"},
+{name:"Logistic Regression",tag:"判别式，线性",
+what:"直接学 P(类别|特征)。用特征的加权和经 softmax 得到概率，训练最大化正确类别的对数似然。",
+steps:[
+{t:"特征化文档",d:"把文档转为特征向量（词袋/TF-IDF）"},
+{t:"线性打分",d:"z_c = w_c · x + b_c，对每个类别计算得分"},
+{t:"Softmax 归一化",d:"P(c|x) = exp(z_c) / Σ_{c'} exp(z_{c'})"},
+{t:"计算损失",d:"L = -log P(正确类别|x)（交叉熵）"},
+{t:"梯度下降更新",d:"w ← w - η·∇L，加 L2 正则化防过拟合"}
+],
+flows:[["文档","→","TF-IDF向量","→","线性变换","→","Softmax","→","P(类别)"]],
+formulas:[
+{lbl:"Softmax 概率",f:"P(c|x) = exp(w_c·x) / Σ_{c'} exp(w_{c'}·x)"},
+{lbl:"交叉熵损失+L2正则",f:"L = -log P(y|x) + λ·||w||²"}
+],
+pros:["不受特征相关性干扰","正则化鲁棒"],
+cons:["线性边界，无法建模非线性","需手工特征"],
+why:"线性模型无法捕捉'not good'这类特征组合的非线性语义，神经网络自动建模非线性"},
+{name:"神经网络分类",tag:"FFNN/RNN/Transformer+softmax",
+what:"用神经网络自动提取文本特征，最后接 softmax 分类层。端到端训练，不需手工设计特征。",
+steps:[
+{t:"编码文本",d:"用 FFNN（词向量平均）、RNN（最后隐状态）或 Transformer（[CLS]向量）编码文档"},
+{t:"分类层",d:"h → softmax(W_y · h)，输出各类别概率"},
+{t:"训练",d:"最小化交叉熵损失，反向传播更新编码器+分类器所有参数"}
+],
+flows:[["文档","→","Encoder(FF/RNN/Trans)","→","文档向量h","→","W_y·h","→","softmax","→","类别"]],
+formulas:[
+{lbl:"输出（以Transformer为例）",f:"P(y|x) = softmax(W_y · h_{[CLS]})"},
+{lbl:"训练损失",f:"L = -Σ y_true · log P(y|x)"}
+],
+pros:["自动学特征，端到端","性能最强"],
+cons:["需大量标注数据","黑盒不可解释"],
+why:"每个任务都要大量标注数据太贵。预训练大模型 + 少量数据微调是更好的范式"}
+]},
+{num:"L5-6",color:"#993556",title:"⑤ 序列标注 Sequence Labeling",sub:"每个 token → 一个标签",methods:[
+{name:"HMM",tag:"生成式，Viterbi解码",
+what:"把标签当隐藏状态，词当观测值。学习两个概率表：标签如何转移，每个标签会生成什么词。Viterbi算法找全局最优标签序列。",
+steps:[
+{t:"估计转移概率",d:"P(t_i|t_{i-1}) = C(t_{i-1},t_i) / C(t_{i-1})"},
+{t:"估计发射概率",d:"P(w_i|t_i) = C(w_i,t_i) / C(t_i)"},
+{t:"Viterbi 解码",d:"动态规划：v_t(j) = max_i [v_{t-1}(i)·P(t_j|t_i)·P(w_t|t_j)]"},
+{t:"回溯",d:"从最后一步回溯找最优路径，得到标签序列"}
+],
+flows:[["词序列","→","发射P(w|t)","×","转移P(t|t-1)","→","Viterbi DP","→","最优标签序列"]],
+formulas:[
+{lbl:"转移概率（MLE）",f:"P(t_i | t_{i-1}) = C(t_{i-1}, t_i) / C(t_{i-1})"},
+{lbl:"发射概率（MLE）",f:"P(w_i | t_i) = C(w_i, t_i) / C(t_i)"},
+{lbl:"Viterbi 递推",f:"v_t(j) = max_i [ v_{t-1}(i) · P(t_j|t_i) · P(w_t|t_j) ]"}
+],
+pros:["Viterbi保证全局最优","建模标签转移"],
+cons:["只依赖当前词，无法用上下文特征","强独立性假设"],
+why:"发射概率只看当前词本身，看不到前后词。CRF是判别式替代，可引入任意上下文特征"},
+{name:"CRF",tag:"判别式序列模型",
+what:"直接建模 P(标签序列|词序列)，可以用任意特征（前后词、词形、是否大写……），Viterbi解码找最优序列。",
+steps:[
+{t:"特征函数设计",d:"定义特征函数 f_k(t_{i-1},t_i,x,i)：如'当前词是大写且标签为B-PER'"},
+{t:"线性打分",d:"score(y,x) = Σ_i Σ_k λ_k · f_k(t_{i-1},t_i,x,i)"},
+{t:"归一化",d:"P(y|x) = exp(score(y,x)) / Σ_{y'} exp(score(y',x))"},
+{t:"训练",d:"最大化条件对数似然，用梯度下降学 λ_k"},
+{t:"Viterbi 解码",d:"找分数最高的标签序列"}
+],
+flows:[["词序列+特征","→","特征函数","→","线性打分","→","Viterbi","→","最优标签序列"]],
+formulas:[
+{lbl:"CRF 条件概率",f:"P(y|x) = (1/Z(x)) · exp( Σ_i Σ_k λ_k·f_k(t_{i-1},t_i,x,i) )"},
+{lbl:"归一化常数",f:"Z(x) = Σ_{y'} exp( Σ_i Σ_k λ_k·f_k(t'_{i-1},t'_i,x,i) )"}
+],
+pros:["任意特征，不需独立性假设","比HMM精度高"],
+cons:["特征仍需手工设计","不能自动学词向量"],
+why:"手工特征设计到头了。BiLSTM 自动从词向量学特征，接CRF做全局解码"},
+{name:"RNN/Transformer 标注",tag:"端到端，BiLSTM-CRF/BERT",
+what:"用双向 RNN 或 Transformer 把整个句子编码，每个位置得到融合了左右上下文的向量，再对每位置预测标签。顶部接CRF做全局解码防止非法序列。",
+steps:[
+{t:"词嵌入",d:"每个 token → 词向量（可用预训练）"},
+{t:"双向编码",d:"BiLSTM：h_t = [LSTM_fwd(x_t); LSTM_bwd(x_t)]，或用Transformer"},
+{t:"标签打分",d:"score_t = W·h_t，对每个标签打分"},
+{t:"CRF 解码",d:"Viterbi 在全序列找最优标签路径（可选）"},
+{t:"训练",d:"最大化正确标签序列的 CRF 概率（负对数似然）"}
+],
+flows:[["token序列","→","词嵌入","→","BiLSTM/Transformer","→","每位置向量h_t","→","线性打分","→","(CRF)Viterbi","→","标签序列"]],
+formulas:[
+{lbl:"BiLSTM 输出",f:"h_t = [ →h_t ; ←h_t ]   (前向+后向拼接)"},
+{lbl:"标签预测",f:"P(y_t|x) = softmax(W · h_t)"},
+{lbl:"Transformer标注（BERT式）",f:"h = BERT(x),  y_t = softmax(W · h_t)"}
+],
+pros:["自动学特征，双向上下文","接CRF全局解码"],
+cons:["从头训练需大量数据","黑盒"],
+why:"即使 BiLSTM 很强，每个新任务还要从头收集数据。预训练 BERT 已学好上下文表示，直接接任务层微调"}
+]},
+{num:"L11+",color:"#185FA5",title:"⑥ 预训练与迁移学习",sub:"一个大模型解决所有任务",methods:[
+{name:"GPT (Decoder-only)",tag:"单向Transformer，CLM预训练",
+what:"在海量文本上用'预测下一个词'任务训练单向 Transformer，学到丰富语言知识，再在下游任务微调。",
+steps:[
+{t:"预训练目标（CLM）",d:"对每个位置 t，用前 t-1 个词预测第 t 个词，最大化 Σ log P(w_t|w_1…w_{t-1})"},
+{t:"微调（分类任务）",d:"在最后一个 token 的输出上加分类层，在标注数据上继续训练"},
+{t:"生成（推理）",d:"自回归生成：每次取概率最高的词作为下一个词（或用 beam search/sampling）"}
+],
+flows:[["大量无标注文本","→","CLM预训练（预测下一词）","→","保存模型权重","→","加分类层微调","→","下游任务"]],
+formulas:[
+{lbl:"CLM 预训练目标",f:"L = -Σ_t log P(w_t | w_1, …, w_{t-1}; θ)"},
+{lbl:"微调分类",f:"P(y|x) = softmax(h_{last} · W_y)"}
+],
+pros:["预训练获得丰富知识","自然支持生成"],
+cons:["单向，无法利用右侧上下文","理解任务不如双向模型"],
+why:"分类/NER等理解任务需要双向上下文，BERT用 Masked LM 实现真正双向"},
+{name:"BERT (Encoder-only)",tag:"双向Transformer，MLM预训练",
+what:"用 Masked Language Modeling（遮住 15% 词让模型预测）预训练双向 Transformer。[CLS] 向量用于分类，每个位置向量用于序列标注。",
+steps:[
+{t:"MLM预训练",d:"随机 mask 15% 的 token（80%替换为[MASK]，10%随机词，10%不变），预测被 mask 的原始词"},
+{t:"NSP预训练（辅助）",d:"判断两个句子是否连续，帮助模型理解句间关系"},
+{t:"微调",d:"加载预训练权重，在下游数据上接任务头（分类层/序列标注层）训练整个网络"}
+],
+flows:[["文本+[MASK]","→","双向Transformer","→","预测mask词（MLM）","→","预训练完成","→","接任务头微调"]],
+formulas:[
+{lbl:"MLM 损失",f:"L_MLM = -Σ_{masked i} log P(w_i | context; θ)"},
+{lbl:"分类（用[CLS]向量）",f:"P(y|x) = softmax(W_y · h_{[CLS]})"},
+{lbl:"序列标注（每个位置）",f:"P(t_i|x) = softmax(W_t · h_i)"}
+],
+pros:["双向上下文，理解任务效果极好","[CLS]直接用于分类"],
+cons:["无法直接生成","微调仍需标注数据"],
+why:"每个任务都要微调全部参数成本高。GPT-3证明模型够大可以 in-context learning，无需更新参数"},
+{name:"LLM + In-context Learning",tag:"GPT-3/4，zero/few-shot",
+what:"模型大到一定程度出现'涌现能力'：在 prompt 里给任务描述和少量示例，模型直接完成任务，完全不更新参数。",
+steps:[
+{t:"构造 Prompt",d:"Zero-shot：直接描述任务；Few-shot：给 k 个示例（输入→输出对）再跟上测试输入"},
+{t:"模型推理",d:"模型基于 prompt 上下文直接生成答案，无梯度更新"},
+{t:"（可选）Chain-of-Thought",d:"prompt 中加入推理过程示例，引导模型逐步推理后给出答案"}
+],
+flows:[["任务描述+示例","→","拼成Prompt","→","LLM推理","→","直接输出答案（无参数更新）"]],
+formulas:[
+{lbl:"Few-shot 推理（概念公式）",f:"P(y | prompt, x) = LLM(task_desc + examples + x)"},
+{lbl:"Chain-of-Thought",f:"prompt = [Q→思路→A] × k + 测试Q → 模型输出思路+A"}
+],
+pros:["无需标注数据","一个模型处理所有任务"],
+cons:["对prompt格式敏感","行为难以精确控制，容易产生有害输出"],
+why:"模型很强但不'听话'。RLHF 用人类反馈训练奖励模型，让模型行为对齐人类意图"},
+{name:"RLHF + Instruction Tuning",tag:"InstructGPT / ChatGPT",
+what:"三步训练：先用高质量示例微调，再训练奖励模型学习人类偏好，最后用强化学习让模型最大化奖励。",
+steps:[
+{t:"Step 1 SFT",d:"收集高质量（prompt, response）对，用监督微调训练初始模型"},
+{t:"Step 2 奖励模型",d:"让人类对模型输出排序（A > B > C），训练奖励模型 R(x,y) 预测人类偏好分数"},
+{t:"Step 3 PPO 强化学习",d:"用 PPO 算法更新语言模型，最大化 R(x,y)，同时加 KL 散度惩罚防止偏离 SFT 太远"}
+],
+flows:[["示例数据","→","SFT","→","人类排序标注","→","奖励模型R","→","PPO优化","→","对齐的LLM"]],
+formulas:[
+{lbl:"PPO 优化目标",f:"max_θ E[R(x,y)] - β·KL(π_θ || π_SFT)"},
+{lbl:"奖励模型目标",f:"L_RM = -log σ(R(x,y_w) - R(x,y_l))   (y_w优于y_l)"}
+],
+pros:["显著提升指令遵循","减少有害输出"],
+cons:["需要大量人工标注偏好数据","Reward hacking风险"],
+why:"即使对齐了，模型知识有截止日期且会幻觉。RAG让模型生成时检索实时外部知识"}
+]}
+];
+
+const root=document.getElementById('root');
+let openMethod=null;
+
+D.forEach((stage,si)=>{
+  const wrap=document.createElement('div');
+  const hdr=document.createElement('div');
+  hdr.className='stage-hdr';
+  hdr.innerHTML=`<span class="stage-num" style="background:${stage.color}">${stage.num}</span><span class="stage-title">${stage.title}</span><span class="stage-sub">${stage.sub}</span><span class="chev" id="chev-${si}">▶</span>`;
+  hdr.onclick=()=>toggleStage(si);
+  wrap.appendChild(hdr);
+
+  const body=document.createElement('div');
+  body.id=`sb-${si}`;body.style.display='none';
+  const row=document.createElement('div');row.className='method-row';
+
+  stage.methods.forEach((m,mi)=>{
+    const card=document.createElement('div');
+    card.className='mcard';card.id=`mc-${si}-${mi}`;
+    card.innerHTML=`<div class="adot"></div><div class="mn">${m.name}</div><div class="mt">${m.tag}</div>`;
+    card.onclick=()=>toggleMethod(si,mi);
+    row.appendChild(card);
+  });
+  body.appendChild(row);
+
+  const det=document.createElement('div');
+  det.className='detail';det.id=`det-${si}`;
+  body.appendChild(det);
+  wrap.appendChild(body);
+
+  if(si<D.length-1){
+    const c=document.createElement('div');c.className='conn';
+    c.innerHTML='<div class="cline"></div><div class="carr">↓</div>';
+    wrap.appendChild(c);
+  }
+  root.appendChild(wrap);
+});
+
+function toggleStage(si){
+  const b=document.getElementById(`sb-${si}`);
+  const c=document.getElementById(`chev-${si}`);
+  const open=b.style.display!=='none';
+  b.style.display=open?'none':'block';
+  c.classList.toggle('open',!open);
+}
+
+function toggleMethod(si,mi){
+  const det=document.getElementById(`det-${si}`);
+  const card=document.getElementById(`mc-${si}-${mi}`);
+  const m=D[si].methods[mi];
+  const isLastStage=si===D.length-1;
+  const isLastMethod=mi===D[si].methods.length-1;
+
+  if(openMethod===`${si}-${mi}`&&det.classList.contains('open')){
+    det.classList.remove('open');card.classList.remove('active');openMethod=null;return;
+  }
+  document.querySelectorAll('.mcard').forEach(c=>c.classList.remove('active'));
+  document.querySelectorAll('.detail').forEach(d=>{d.classList.remove('open');d.innerHTML='';});
+  card.classList.add('active');openMethod=`${si}-${mi}`;
+
+  const nextLbl=isLastStage&&isLastMethod?'→ 当前前沿方向':isLastMethod?`→ 引出下一阶段：${D[si+1].title}`:'→ 为什么需要下一个方法';
+
+  const stepsHtml=m.steps.map((s,i)=>`<li class="step-li"><span class="step-n">${i+1}</span><span class="step-txt"><strong>${s.t}</strong>：${s.d}</span></li>`).join('');
+  const formulasHtml=m.formulas.map(f=>`<div class="formula-lbl">${f.lbl}</div><div class="formula">${f.f}</div>`).join('');
+  const flowHtml=m.flows.map(fl=>`<div class="flow">${fl.map((seg,i)=>i%2===0?`<div class="fbox">${seg}</div>`:`<div class="farr">${seg}</div>`).join('')}</div>`).join('');
+
+  det.innerHTML=`
+    <div class="tabs">
+      <div class="tab on" onclick="switchTab(this,'t-what-${si}-${mi}',${si},${mi})">简介</div>
+      <div class="tab" onclick="switchTab(this,'t-steps-${si}-${mi}',${si},${mi})">步骤与公式</div>
+      <div class="tab" onclick="switchTab(this,'t-pc-${si}-${mi}',${si},${mi})">优缺点</div>
+      <div class="tab" onclick="switchTab(this,'t-why-${si}-${mi}',${si},${mi})">引出路径</div>
+    </div>
+    <div class="tab-body on" id="t-what-${si}-${mi}">
+      <p class="what-txt">${m.what}</p>
+    </div>
+    <div class="tab-body" id="t-steps-${si}-${mi}">
+      ${flowHtml}
+      <ul class="step-list">${stepsHtml}</ul>
+      ${formulasHtml}
+    </div>
+    <div class="tab-body" id="t-pc-${si}-${mi}">
+      <div class="pro-con">
+        <div class="pc pro"><div class="pclbl">优点 Pros</div>${m.pros.map(p=>`<div class="pci">${p}</div>`).join('')}</div>
+        <div class="pc con"><div class="pclbl">缺点 Cons</div>${m.cons.map(c=>`<div class="pci">${c}</div>`).join('')}</div>
+      </div>
+    </div>
+    <div class="tab-body" id="t-why-${si}-${mi}">
+      <div class="why"><div class="why-lbl">${nextLbl}</div><div class="why-txt">${m.why}</div></div>
+    </div>`;
+  det.classList.add('open');
+}
+
+function switchTab(el,targetId,si,mi){
+  const det=document.getElementById(`det-${si}`);
+  det.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
+  det.querySelectorAll('.tab-body').forEach(b=>b.classList.remove('on'));
+  el.classList.add('on');
+  document.getElementById(targetId).classList.add('on');
+}
+
+D.forEach((_,si)=>toggleStage(si));
+</script>
